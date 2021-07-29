@@ -1,0 +1,66 @@
+#Aviad klein
+# ID 315552679
+# LAB 2.2
+.data
+first_str: .asciiz "\nENTER VALUE\n"
+sec_str: .asciiz "ENTER OP CODE\n"
+end_str: .asciiz "the result is "
+error_str: .asciiz "ERROR\n"
+
+.text
+la $a0 ,first_str # טען מחרוזת 1 לרגיסטר פעולה
+li $v0 ,4 # קריאת פעולה להדפסת מחרוזת
+syscall
+li $v0 ,5 # קוד פעולה לקריאת נתון מהמקלדת
+syscall
+
+addi $t0,$v0,0 # שמירת הנתון בT0
+loop:
+ la $a0 ,sec_str # אען מחרוזת 2 לa0
+li $v0,4 # הדפס מחרוזת
+syscall
+li $v0,12 # קוד מערכת לקליטת char
+syscall
+addi $t2,$v0,0 # העתקת האופרטורל t2
+xori $t3,$t2,'@' # האם ערך האסקי של @ שווה לt2? vto vufbx @/
+beq $t3,$zero,end # אם הוכנס @ אז t3 שווה 0 ותסיים את התוכנית
+
+la $a0 ,first_str # הדפסת מחרוזת 1
+li $v0 ,4 
+syscall 
+
+li $v0 ,5 # קליטת משתנה חדש
+syscall
+addi $t1,$v0,0 # העתקת המשתנה לt1
+
+xori $t3,$t2,'+' # האם קיבלנו אופרטור +
+bne $t3,$zero,minus
+add $t0,$t0,$t1
+j loop
+
+minus: 
+xori $t3,$t2,'-' # האם קיבלנו -
+bne $t3,$zero,multply
+sub $t0,$t0,$t1
+j loop
+
+multply:
+mult $t0,$t1
+mflo $t0 # העתקת התוצאה מ low לt0
+mfhi $t7 # העתקת התוצאה מhigh לt7
+beq $t7,$zero,next #בדיקה האם ישנה תוצאה בhigh, אם לא נעבור לnext
+la $a0 ,error_str # הדפסת מחרוזת שגיאה לחריגה
+li $v0 ,4 
+syscall
+li $v0 10 # סיים תוכנית
+syscall
+
+next: j loop
+
+end:
+la $a0 ,end_str #הדפסת מחרוזת התשובה
+li $v0,4
+syscall
+addi $a0,$t0,0 # טעינת התשובה לרגיסטר a0
+li $v0,1 #vהדפסה
+syscall 
